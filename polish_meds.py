@@ -1,9 +1,12 @@
+import os
 import requests
 import pandas as pd
 
 
 def download_file(url: str, file_location: str):
     response = requests.get(url, stream=True)
+
+    os.makedirs(os.path.dirname(file_location), exist_ok=True)
 
     if response.status_code == 200:
         with open(file_location, "wb") as f:
