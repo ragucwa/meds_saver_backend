@@ -9,7 +9,7 @@ file_path = "./downloaded_files/meds_list.xml"
 
 app = Flask(__name__)
 
-textract_client = boto3.client("textract")
+textract_client = boto3.client("textract", region_name="eu-west-3c")
 
 polish_meds.download_file(url, file_path)
 list_of_meds = polish_meds.get_meds(file_path)
