@@ -17,7 +17,7 @@ table = dynamodb.Table("Medicine")
 print(table)
 
 polish_meds.download_file(url, file_path)
-# list_of_meds = polish_meds.get_meds(file_path)
+list_of_meds = polish_meds.get_meds(file_path)
 
 
 @app.route("/upload/", methods=["POST"])
