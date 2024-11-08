@@ -2,6 +2,7 @@ from flask import Flask, request, jsonify
 import boto3
 from botocore.exceptions import NoCredentialsError, ClientError
 import polish_meds
+import dynamodb_utils
 
 
 url = "https://rejestry.ezdrowie.gov.pl/api/rpl/medicinal-products/public-pl-report/5.0.0/overall.xml"
@@ -9,7 +10,11 @@ file_path = "./downloaded_files/meds_list.xml"
 
 app = Flask(__name__)
 
-textract_client = boto3.client("textract", region_name="eu-west-3c")
+textract_client = boto3.client("textract", region_name="eu-west-3")
+dynamodb = boto3.resource("dynamodb", region_name="eu-west-3")
+print(dynamodb)
+table = dynamodb.Table("Medicine")
+print(table)
 
 polish_meds.download_file(url, file_path)
 list_of_meds = polish_meds.get_meds(file_path)
@@ -36,6 +41,7 @@ async def upload_image():
         texttract_results = set(word.lower() for word in extracted_text)
 
         matched_med = polish_meds.match_meds(texttract_results, list_of_meds)
+        dynamodb_utils.put_med_into_db(table, matched_med)
 
         return jsonify({"matched_meds": matched_med})
 
@@ -48,4 +54,4 @@ async def upload_image():
 
 
 if __name__ == "__main__":
-    app.run(debug=True)
+    app.run()
