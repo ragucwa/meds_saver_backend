@@ -1,3 +1,4 @@
+import tracemalloc
 from flask import Flask, request, jsonify
 import boto3
 from botocore.exceptions import NoCredentialsError, ClientError
@@ -10,14 +11,54 @@ file_path = "./downloaded_files/meds_list.xml"
 
 app = Flask(__name__)
 
+tracemalloc.start()
+
 textract_client = boto3.client("textract", region_name="eu-west-3")
 dynamodb = boto3.resource("dynamodb", region_name="eu-west-3")
-print(dynamodb)
 table = dynamodb.Table("Medicine")
-print(table)
+
+snapshot_aws_services = tracemalloc.take_snapshot()
+top_stats_aws = snapshot_aws_services.statistics("lineno")
+
+print("[ AWS Services Initialization Top memory allocations ]")
+for stat in top_stats_aws[:10]:
+    print(stat)
+
 
 polish_meds.download_file(url, file_path)
+
+snapshot_download = tracemalloc.take_snapshot()
+top_stats_download = snapshot_download.statistics("lineno")
+
+print("[ Download Top memory allocations ]")
+for stat in top_stats_download[:10]:
+    print(stat)
+
 list_of_meds = polish_meds.get_meds(file_path)
+
+snapshot_get_meds = tracemalloc.take_snapshot()
+top_stats_get_meds = snapshot_get_meds.statistics("lineno")
+
+print("[ Get Medicines Top memory allocations ]")
+for stat in top_stats_get_meds[:10]:
+    print(stat)
+
+
+@app.before_request
+def start_trace():
+    tracemalloc.start()  # Start tracing memory allocations for requests
+
+
+@app.after_request
+def stop_trace(response):
+    snapshot = tracemalloc.take_snapshot()  # Take a memory snapshot
+    top_stats = snapshot.statistics("lineno")  # Get line statistics
+
+    print("[ Request Top memory allocations ]")
+    for stat in top_stats[:10]:  # Display the top 10 memory allocations
+        print(stat)
+
+    tracemalloc.stop()  # Stop tracing for the request
 
 
 @app.route("/upload/", methods=["POST"])
