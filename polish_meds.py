@@ -18,8 +18,11 @@ def download_file(url: str, file_location: str):
 
 
 def get_meds(file_location: str):
+    print("Start reading")
     full_meds_table = pd.read_xml(file_location)
+    print("Start extracting")
     meds_names_table = full_meds_table["nazwaProduktu"]
+    print("Finished extracting")
 
     return meds_names_table
 
