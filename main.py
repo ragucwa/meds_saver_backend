@@ -41,8 +41,12 @@ print("[ Download Top memory allocations ]")
 for stat in top_stats_download[:10]:
     print(stat)
 
-cProfile.run("profiled_get_meds()", "output_file.prof")
-list_of_meds = profiled_get_meds()
+profiler = cProfile.Profile()
+profiler.enable()
+matched_med = profiled_get_meds()
+profiler.disable()
+
+profiler.dump_stats("output_file.prof")
 
 p = pstats.Stats("output_file.prof")
 p.sort_stats("cumulative").print_stats(10)
