@@ -1,6 +1,7 @@
 import os
 import requests
 import pandas as pd
+from data.list_of_meds import list_of_meds as meds
 
 
 def download_file(url: str, file_location: str):
@@ -18,16 +19,10 @@ def download_file(url: str, file_location: str):
 
 
 def get_meds(file_location: str):
-    print("Start reading")
-    full_meds_table = pd.read_xml(
-        file_location, xpath=".//produktLeczniczy", attrs_only=["nazwaProduktu"]
-    )
-    print("Finished extracting")
-
-    return full_meds_table
+    return meds
 
 
-def match_meds(text_for_search: set, list_of_meds: pd.Series):
+def match_meds(text_for_search: set, list_of_meds: list):
     matched_med = ""
 
     for medicine in list_of_meds:

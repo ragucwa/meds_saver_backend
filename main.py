@@ -1,79 +1,23 @@
-import tracemalloc
 from flask import Flask, request, jsonify
 import boto3
 from botocore.exceptions import NoCredentialsError, ClientError
 import polish_meds
 import dynamodb_utils
-import cProfile
-import pstats
 
 
-url = "https://rejestry.ezdrowie.gov.pl/api/rpl/medicinal-products/public-pl-report/5.0.0/overall.xml"
-file_path = "./downloaded_files/meds_list.xml"
+url = "https://rejestry.ezdrowie.gov.pl/api/rpl/medicinal-products/public-pl-report/get-csv"
+file_path = "./downloaded_files/meds_list.csv"
 
 app = Flask(__name__)
-
-
-def profiled_get_meds():
-    return polish_meds.get_meds(file_path)
-
-
-tracemalloc.start()
 
 textract_client = boto3.client("textract", region_name="eu-west-3")
 dynamodb = boto3.resource("dynamodb", region_name="eu-west-3")
 table = dynamodb.Table("Medicine")
 
-snapshot_aws_services = tracemalloc.take_snapshot()
-top_stats_aws = snapshot_aws_services.statistics("lineno")
-
-print("[ AWS Services Initialization Top memory allocations ]")
-for stat in top_stats_aws[:10]:
-    print(stat)
-
 
 polish_meds.download_file(url, file_path)
 
-snapshot_download = tracemalloc.take_snapshot()
-top_stats_download = snapshot_download.statistics("lineno")
-
-print("[ Download Top memory allocations ]")
-for stat in top_stats_download[:10]:
-    print(stat)
-
-profiler = cProfile.Profile()
-profiler.enable()
-list_of_meds = profiled_get_meds()
-profiler.disable()
-
-profiler.dump_stats("output_file.prof")
-
-p = pstats.Stats("output_file.prof")
-p.sort_stats("cumulative").print_stats(10)
-
-snapshot_get_meds = tracemalloc.take_snapshot()
-top_stats_get_meds = snapshot_get_meds.statistics("lineno")
-
-print("[ Get Medicines Top memory allocations ]")
-for stat in top_stats_get_meds[:10]:
-    print(stat)
-
-
-@app.before_request
-def start_trace():
-    tracemalloc.start()  # Start tracing memory allocations for requests
-
-
-@app.after_request
-def stop_trace(response):
-    snapshot = tracemalloc.take_snapshot()  # Take a memory snapshot
-    top_stats = snapshot.statistics("lineno")  # Get line statistics
-
-    print("[ Request Top memory allocations ]")
-    for stat in top_stats[:10]:  # Display the top 10 memory allocations
-        print(stat)
-
-    tracemalloc.stop()  # Stop tracing for the request
+list_of_meds = polish_meds.get_meds(file_path)
 
 
 @app.route("/upload/", methods=["POST"])
