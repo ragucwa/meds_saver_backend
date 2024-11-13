@@ -43,7 +43,7 @@ for stat in top_stats_download[:10]:
 
 profiler = cProfile.Profile()
 profiler.enable()
-matched_med = profiled_get_meds()
+list_of_meds = profiled_get_meds()
 profiler.disable()
 
 profiler.dump_stats("output_file.prof")

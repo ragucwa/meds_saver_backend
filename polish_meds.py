@@ -20,7 +20,7 @@ def download_file(url: str, file_location: str):
 def get_meds(file_location: str):
     print("Start reading")
     full_meds_table = pd.read_xml(
-        file_location, xpath=".//produktLeczniczy", attrs=["nazwaProduktu"]
+        file_location, xpath=".//produktLeczniczy", attrs_only=["nazwaProduktu"]
     )
     print("Finished extracting")
 
