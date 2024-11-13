@@ -19,12 +19,12 @@ def download_file(url: str, file_location: str):
 
 def get_meds(file_location: str):
     print("Start reading")
-    full_meds_table = pd.read_xml(file_location)
-    print("Start extracting")
-    meds_names_table = full_meds_table["nazwaProduktu"]
+    full_meds_table = pd.read_xml(
+        file_location, xpath=".//produktLeczniczy", attrs=["nazwaProduktu"]
+    )
     print("Finished extracting")
 
-    return meds_names_table
+    return full_meds_table
 
 
 def match_meds(text_for_search: set, list_of_meds: pd.Series):

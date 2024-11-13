@@ -4,12 +4,19 @@ import boto3
 from botocore.exceptions import NoCredentialsError, ClientError
 import polish_meds
 import dynamodb_utils
+import cProfile
+import pstats
 
 
 url = "https://rejestry.ezdrowie.gov.pl/api/rpl/medicinal-products/public-pl-report/5.0.0/overall.xml"
 file_path = "./downloaded_files/meds_list.xml"
 
 app = Flask(__name__)
+
+
+def profiled_get_meds():
+    return polish_meds.get_meds(file_path)
+
 
 tracemalloc.start()
 
@@ -34,7 +41,11 @@ print("[ Download Top memory allocations ]")
 for stat in top_stats_download[:10]:
     print(stat)
 
-list_of_meds = polish_meds.get_meds(file_path)
+cProfile.run("profiled_get_meds()", "output_file.prof")
+list_of_meds = profiled_get_meds()
+
+p = pstats.Stats("output_file.prof")
+p.sort_stats("cumulative").print_stats(10)
 
 snapshot_get_meds = tracemalloc.take_snapshot()
 top_stats_get_meds = snapshot_get_meds.statistics("lineno")
