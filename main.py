@@ -18,10 +18,12 @@ table = dynamodb.Table("Medicine")
 polish_meds.download_file(url, file_path)
 
 list_of_meds = polish_meds.get_meds(file_path)
+print("Got meds")
 
 
 @app.route("/upload/", methods=["POST"])
 async def upload_image():
+    print("Endpoint reached")
     if "file" not in request.files:
         return jsonify({"error": "No file part"}), 400
 
@@ -29,6 +31,8 @@ async def upload_image():
 
     if file.filename == "":
         return jsonify({"error": "No selected file"}), 400
+
+    print("Start textract")
 
     try:
         response = textract_client.detect_document_text(Document={"Bytes": file.read()})
@@ -40,8 +44,12 @@ async def upload_image():
 
         texttract_results = set(word.lower() for word in extracted_text)
 
+        print(f"Received resposne from textract{texttract_results}")
+
         matched_med = polish_meds.match_meds(texttract_results, list_of_meds)
         dynamodb_utils.put_med_into_db(table, matched_med)
+
+        print("Found match")
 
         return jsonify({"matched_meds": matched_med})
 

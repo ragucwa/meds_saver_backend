@@ -19,6 +19,7 @@ def download_file(url: str, file_location: str):
 
 
 def get_meds(file_location: str):
+    print("Getting meds")
     return meds
 
 
