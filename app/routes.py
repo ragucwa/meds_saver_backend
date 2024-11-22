@@ -19,8 +19,11 @@ async def upload_image():
 
     try:
         extracted_text = extract_text_from_image(file)
+        print("1")
         matched_med = polish_meds.match_meds(extracted_text, polish_meds.get_meds())
+        print("2")
         put_med_into_db(matched_med)
+        print("3")
 
         return jsonify({"matched_meds": matched_med})
 

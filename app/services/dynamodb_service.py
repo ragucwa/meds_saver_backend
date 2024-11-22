@@ -5,7 +5,7 @@ dynamodb = boto3.resource("dynamodb", region_name="eu-west-3")
 table = dynamodb.Table("Medicine")
 
 
-def put_med_into_db(table, med):
+def put_med_into_db(med):
     highest_id = get_highest_id(table)
 
     if highest_id is None:
